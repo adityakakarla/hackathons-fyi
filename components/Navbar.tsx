@@ -2,7 +2,11 @@ import { TrophyIcon, ExternalLinkIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-export default function Navbar() {
+interface NavbarProps {
+  resetState?: () => void;
+}
+
+export default function Navbar({ resetState }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   
   useEffect(() => {
@@ -30,9 +34,18 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center group">
-              <TrophyIcon className="h-6 w-6 text-[var(--accent)] group-hover:text-[var(--accent-dark)] transition-colors duration-300" />
-              <span className="ml-2 text-lg font-bold text-[var(--text-primary)] terminal-text group-hover:text-[var(--accent)] transition-colors duration-300">
+            <Link 
+              href="/" 
+              className="flex-shrink-0 flex items-center group"
+              onClick={(e) => {
+                if (resetState && window.location.pathname === '/') {
+                  e.preventDefault();
+                  resetState();
+                }
+              }}
+            >
+              <TrophyIcon className="h-6 w-6 text-[var(--accent)] group-hover:text-[var(--accent-dark)] transition-colors duration-300 transform group-hover:scale-110" />
+              <span className="ml-2 text-lg font-bold text-[var(--text-primary)] terminal-text group-hover:text-[var(--accent)] transition-all duration-300">
                 hackathons<span className="text-[var(--accent)]">.fyi</span>
               </span>
             </Link>

@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, FormEvent, useEffect } from "react";
+import React, { useState, FormEvent, useEffect, useRef } from "react";
 import {
   Code2Icon,
   ZapIcon,
@@ -17,48 +17,113 @@ import ProjectCard from "@/components/ProjectCard";
 export default function Home() {
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchPlaceholder, setSearchPlaceholder] = useState("");
+  const searchPlaceholderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Function to reset the page state
+  const resetState = () => {
+    setHoveredTag(null);
+    setSelectedTags([]);
+    setSearchQuery("");
+    setIsSearchFocused(false);
+    setShowResults(false);
+    setIsSearching(false);
+    // Don't reset the searchPlaceholder as it's controlled by the typing effect
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Typing effect for search placeholder
+  useEffect(() => {
+    const placeholders = [
+      "Best projects at HackMIT ",
+      "Winning web3 projects at TreeHacks ",
+      "Award-winning healthcare projects ",
+      "Winning projects at Technica ",
+      "Best hack at HackSC ",
+      "Winning projects at HackRice ",
+      "Inspiring defense projects ",
+      "Best hack at Hack the Valley ",
+      "Innovative education projects "
+    ];
+    
+    let currentIndex = 0;
+    let phase = "typing"; // "typing", "pause", "deleting", or "nextWord"
+    let textPosition = 0;
+    
+    const typeEffect = () => {
+      const currentText = placeholders[currentIndex];
+      let delay = 70; // Default typing delay
+      
+      if (phase === "typing") {
+        // Show text up to the current position
+        setSearchPlaceholder(currentText.substring(0, textPosition));
+        textPosition++;
+        
+        // If we've typed the full word (including the last character)
+        if (textPosition > currentText.length) {
+          // Make sure the full text is displayed
+          setSearchPlaceholder(currentText);
+          phase = "pause";
+          delay = 1500; // Pause before deleting
+        }
+      } 
+      else if (phase === "pause") {
+        // After pause, start deleting
+        // Make sure the full text is still displayed during the transition
+        setSearchPlaceholder(currentText);
+        phase = "deleting";
+        // Reset text position to the full length for deletion
+        textPosition = currentText.length;
+      } 
+      else if (phase === "deleting") {
+        // Delete one character at a time
+        textPosition--;
+        setSearchPlaceholder(currentText.substring(0, textPosition));
+        delay = 30; // Faster for deleting
+        
+        // When all characters are deleted
+        if (textPosition <= 0) {
+          phase = "nextWord";
+        }
+      } 
+      else if (phase === "nextWord") {
+        // Move to next word
+        currentIndex = (currentIndex + 1) % placeholders.length;
+        textPosition = 0;
+        phase = "typing";
+      }
+      
+      // Continue the animation
+      searchPlaceholderTimeoutRef.current = setTimeout(typeEffect, delay);
+    };
+    
+    // Start the animation
+    searchPlaceholderTimeoutRef.current = setTimeout(typeEffect, 500);
+    
+    // Cleanup
+    return () => {
+      if (searchPlaceholderTimeoutRef.current) {
+        clearTimeout(searchPlaceholderTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const tags: string[] = ["AI/ML", "Web3", "AR/VR", "Healthcare", "Climate Tech", "Full Stack", "Mobile"];
 
-  // Example project data
-  const exampleProject = {
+  const demoProject = {
     projectName: "DevCollab",
     date: "March 2025",
-    hackathon: "HackTheTerminal",
-    tagline: "Real-time collaborative coding platform with AI pair programming",
+    hackathon: "HackTheTerminal 2023",
+    tagline: "A real-time collaborative coding platform with integrated video chat and AI code suggestions.",
     projectUrl: "https://github.com/example/devcollab",
     tags: ["AI/ML", "Full Stack"]
   };
-
-  // Particle animation elements
-  const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, size: number, speed: number}>>([]);
-
-  useEffect(() => {
-    // Create initial particles
-    const newParticles = Array(15).fill(0).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 1,
-      speed: Math.random() * 0.3 + 0.1
-    }));
-    setParticles(newParticles);
-
-    // Animation loop for particles
-    const interval = setInterval(() => {
-      setParticles(prev => prev.map(p => ({
-        ...p,
-        y: (p.y + p.speed) % 100,
-        x: p.x + (Math.random() - 0.5) * 0.2
-      })));
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleTagClick = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -87,28 +152,11 @@ export default function Home() {
       <div className="absolute inset-0 bg-[var(--bg-primary)] z-0"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-secondary)]/50 to-[var(--bg-primary)] z-0"></div>
       
-      {/* Particles */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        {particles.map(particle => (
-          <div 
-            key={particle.id} 
-            className="absolute rounded-full bg-[var(--accent)]/5" 
-            style={{
-              left: `${particle.x}%`, 
-              top: `${particle.y}%`, 
-              width: `${particle.size}px`, 
-              height: `${particle.size}px`,
-              opacity: Math.random() * 0.5 + 0.2
-            }}
-          />
-        ))}
-      </div>
-      
       {/* Grid background */}
       <div className="absolute inset-0 grid-background z-0 opacity-20"></div>
       
       {/* Navbar */}
-      <Navbar />
+      <Navbar resetState={resetState} />
       
       {/* Main content container */}
       <div className="relative z-10 pt-24 pb-12">
@@ -153,7 +201,7 @@ export default function Home() {
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
                 className="block w-full pl-12 pr-4 py-5 border-b border-[var(--border-primary)] rounded-lg leading-5 bg-transparent terminal-text placeholder-[var(--text-secondary)]/50 focus:outline-none focus:border-[var(--accent)] text-lg transition-all duration-300"
-                placeholder="$ search --type=hack --filter=awesome"
+                placeholder={searchPlaceholder}
               />
             </div>
             
@@ -231,7 +279,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            {!isSearching && <ProjectCard {...exampleProject} />}
+            {!isSearching && <ProjectCard {...demoProject} />}
           </div>
         )}
         
