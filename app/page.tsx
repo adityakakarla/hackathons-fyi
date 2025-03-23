@@ -14,6 +14,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProjectCard from "@/components/ProjectCard";
 
+interface ProjectCardProps {
+  projectName: string;
+  date?: string;
+  hackathon: string;
+  tagline: string;
+  projectUrl?: string;
+  tags?: string[];
+  description?: string;
+  slug?: string;
+}
+
 export default function Home() {
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -22,7 +33,7 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchPlaceholder, setSearchPlaceholder] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<ProjectCardProps[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
   const searchPlaceholderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -117,15 +128,6 @@ export default function Home() {
   }, []);
 
   const tags: string[] = ["AI/ML", "Web3", "AR/VR", "Healthcare", "Climate Tech", "Full Stack", "Mobile"];
-
-  const demoProject = {
-    projectName: "DevCollab",
-    date: "March 2025",
-    hackathon: "HackTheTerminal 2023",
-    tagline: "A real-time collaborative coding platform with integrated video chat and AI code suggestions.",
-    projectUrl: "https://github.com/example/devcollab",
-    tags: ["AI/ML", "Full Stack"]
-  };
 
   const handleTagClick = (tag: string) => {
     if (selectedTags.includes(tag)) {
@@ -328,7 +330,7 @@ export default function Home() {
                 {searchResults.length > 0 ? (
                   searchResults.map((project, index) => (
                     <ProjectCard 
-                      key={project.id || index}
+                      key={index}
                       projectName={project.projectName}
                       date={project.date}
                       hackathon={project.hackathon}

@@ -9,7 +9,6 @@ interface ProjectCardProps {
     projectUrl?: string;
     tags?: string[];
     description?: string;
-    slug?: string;
 }
 
 export default function ProjectCard({ 
@@ -18,11 +17,10 @@ export default function ProjectCard({
     tagline, 
     projectUrl,
     tags = [],
-    description
 }: ProjectCardProps) {
     // Truncate long taglines
     const truncatedTagline = tagline.length > 120 
-        ? tagline.substring(0, 120) + '...' 
+        ? tagline.substring(0, 120) + '...'
         : tagline;
 
     return (
