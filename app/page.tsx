@@ -22,6 +22,8 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchPlaceholder, setSearchPlaceholder] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const searchPlaceholderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Function to reset the page state
@@ -137,13 +139,47 @@ export default function Home() {
     e.preventDefault();
     setIsSearching(true);
     setShowResults(true);
+    setSearchError(null);
     
-    // Simulate search delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setIsSearching(false);
-    
-    // Here you would implement the actual search functionality
-    console.log("Searching for:", searchQuery, "with tags:", selectedTags);
+    try {
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          searchQuery,
+          selectedTags,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || `Error ${response.status}: Failed to perform search`);
+      }
+
+      console.log('Search results:', data);
+      setSearchResults(data.results || []);
+      
+      // If we got a successful response but no results, check the debug endpoint
+      if (data.results && data.results.length === 0) {
+        console.log('No results found, checking debug endpoint...');
+        try {
+          const debugResponse = await fetch('/api/debug');
+          const debugData = await debugResponse.json();
+          console.log('Debug data:', debugData);
+        } catch (debugError) {
+          console.error('Debug endpoint error:', debugError);
+        }
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      setSearchError((error as Error).message || 'An error occurred during search');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -270,16 +306,45 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="mt-2 space-y-1">
-                  <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
-                    <span className="text-[var(--accent)]">&gt;</span> Found 1 matching project
-                  </p>
-                  <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
-                    <span className="text-[var(--accent)]">&gt;</span> Displaying results by relevance
-                  </p>
+                  {searchError ? (
+                    <p className="text-sm text-[var(--accent)] terminal-text">
+                      <span className="text-[var(--accent)]">&gt;</span> Error: {searchError}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
+                        <span className="text-[var(--accent)]">&gt;</span> Found {searchResults.length} matching project{searchResults.length !== 1 ? 's' : ''}
+                      </p>
+                      <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
+                        <span className="text-[var(--accent)]">&gt;</span> Displaying results by relevance
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
-            {!isSearching && <ProjectCard {...demoProject} />}
+            {!isSearching && !searchError && (
+              <div className="space-y-6">
+                {searchResults.length > 0 ? (
+                  searchResults.map((project, index) => (
+                    <ProjectCard 
+                      key={project.id || index}
+                      projectName={project.projectName}
+                      date={project.date}
+                      hackathon={project.hackathon}
+                      tagline={project.tagline}
+                      projectUrl={project.projectUrl}
+                      tags={project.tags}
+                    />
+                  ))
+                ) : (
+                  <div className="backdrop-blur-sm bg-[var(--bg-secondary)]/90 border border-[var(--border-primary)] rounded-lg p-6 text-center">
+                    <p className="text-[var(--text-secondary)] terminal-text">No projects found matching your criteria.</p>
+                    <p className="text-[var(--text-secondary)]/60 text-sm mt-2 terminal-text">Try a different search term or remove some filters.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
         

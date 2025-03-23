@@ -1,34 +1,37 @@
 import React from 'react';
-import { ExternalLinkIcon, CalendarIcon, TrophyIcon } from 'lucide-react';
+import { ExternalLinkIcon, TrophyIcon, Code2Icon, ZapIcon, LightbulbIcon, ServerIcon, LayersIcon, SmartphoneIcon, LeafIcon } from 'lucide-react';
 
 interface ProjectCardProps {
     projectName: string;
-    date: string;
+    date?: string;
     hackathon: string;
     tagline: string;
     projectUrl?: string;
     tags?: string[];
+    description?: string;
+    slug?: string;
 }
 
 export default function ProjectCard({ 
     projectName, 
-    date, 
     hackathon, 
     tagline, 
     projectUrl,
-    tags = []
+    tags = [],
+    description
 }: ProjectCardProps) {
+    // Truncate long taglines
+    const truncatedTagline = tagline.length > 120 
+        ? tagline.substring(0, 120) + '...' 
+        : tagline;
+
     return (
         <div className="backdrop-blur-sm bg-[var(--bg-secondary)]/90 border border-[var(--border-primary)] rounded-lg transition-all duration-300 hover:border-[var(--accent)] hover:shadow-[var(--accent)]/5 overflow-hidden group">
             <div className="p-6">
                 <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2 terminal-text group-hover:text-[var(--accent)] transition-colors duration-300">
                     <span className="text-[var(--accent)]">&gt;</span> {projectName}
                 </h3>
-                <div className="flex items-center gap-3 text-[var(--text-secondary)] text-sm mb-3">
-                    <span className="flex items-center">
-                        <CalendarIcon className="w-4 h-4 mr-1" />
-                        {date}
-                    </span>
+                <div className="flex items-center text-[var(--text-secondary)] text-sm mb-3">
                     <span className="flex items-center">
                         <TrophyIcon className="w-4 h-4 mr-1 text-[var(--accent)]" />
                         <span className="bg-[var(--accent)]/5 text-[var(--accent)] px-2 py-1 rounded-md terminal-text">
@@ -36,18 +39,30 @@ export default function ProjectCard({
                         </span>
                     </span>
                 </div>
-                <p className="text-[var(--text-secondary)] mb-4 terminal-text">{tagline}</p>
+                <p className="text-[var(--text-secondary)] mb-4 terminal-text">{truncatedTagline}</p>
                 
-                {tags.length > 0 && (
+                {tags && tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                        {tags.map((tag, index) => (
-                            <span 
-                                key={index}
-                                className="text-xs px-2 py-1 rounded-full border border-[var(--border-primary)] text-[var(--text-secondary)] terminal-text"
-                            >
-                                {tag}
-                            </span>
-                        ))}
+                        {tags.slice(0, 5).map((tag, index) => {
+                            // Normalize tag for display
+                            const displayTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+                            
+                            return (
+                                <span 
+                                    key={index}
+                                    className="text-xs px-2 py-1 rounded-full border border-[var(--border-primary)] text-[var(--text-secondary)] terminal-text flex items-center gap-1"
+                                >
+                                    {tag.toLowerCase().includes('ai') && <Code2Icon className="inline h-3 w-3" />}
+                                    {tag.toLowerCase().includes('web3') && <ZapIcon className="inline h-3 w-3" />}
+                                    {tag.toLowerCase().includes('vr') && <LightbulbIcon className="inline h-3 w-3" />}
+                                    {tag.toLowerCase().includes('health') && <ServerIcon className="inline h-3 w-3" />}
+                                    {tag.toLowerCase().includes('stack') && <LayersIcon className="inline h-3 w-3" />}
+                                    {tag.toLowerCase().includes('mobile') && <SmartphoneIcon className="inline h-3 w-3" />}
+                                    {tag.toLowerCase().includes('climate') && <LeafIcon className="inline h-3 w-3" />}
+                                    {displayTag}
+                                </span>
+                            );
+                        })}
                     </div>
                 )}
                 
