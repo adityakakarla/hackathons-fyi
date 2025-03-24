@@ -1,14 +1,14 @@
 'use client'
 import React, { useState, FormEvent, useEffect, useRef } from "react";
-import {
-  Code2Icon,
-  ZapIcon,
-  ServerIcon,
-  LightbulbIcon,
-  SmartphoneIcon,
-  LayersIcon,
-  LoaderIcon,
-  LeafIcon
+import { 
+  Search, 
+  ArrowRight, 
+  Loader2, 
+  Sparkles,
+  Code2, 
+  Globe,
+  Brain, 
+  Laptop
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -22,12 +22,9 @@ interface ProjectCardProps {
   projectUrl?: string;
   tags?: string[];
   description?: string;
-  slug?: string;
 }
 
 export default function Home() {
-  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -36,11 +33,10 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<ProjectCardProps[]>([]);
   const [searchError, setSearchError] = useState<string | null>(null);
   const searchPlaceholderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Function to reset the page state
   const resetState = () => {
-    setHoveredTag(null);
-    setSelectedTags([]);
     setSearchQuery("");
     setIsSearchFocused(false);
     setShowResults(false);
@@ -54,21 +50,24 @@ export default function Home() {
   // Typing effect for search placeholder
   useEffect(() => {
     const placeholders = [
-      "Best projects at HackMIT ",
-      "Winning web3 projects at TreeHacks ",
-      "Award-winning healthcare projects ",
-      "Winning projects at Technica ",
-      "Best hack at HackSC ",
-      "Winning projects at HackRice ",
-      "Inspiring defense projects ",
-      "Best hack at Hack the Valley ",
-      "Innovative education projects "
+      "AI projects",
+      "Web3 apps",
+      "Mobile games",
+      "AR/VR demos",
+      "Climate tech",
+      "Health apps",
+      "Crypto tools",
+      "Next.js sites"
     ];
+    
+    // Check if the device is likely mobile based on width
+    const isMobile = window.innerWidth <= 768;
     
     let currentIndex = 0;
     let phase = "typing"; // "typing", "pause", "deleting", or "nextWord"
     let textPosition = 0;
     
+    // Function to handle animation
     const typeEffect = () => {
       const currentText = placeholders[currentIndex];
       let delay = 70; // Default typing delay
@@ -116,29 +115,46 @@ export default function Home() {
       searchPlaceholderTimeoutRef.current = setTimeout(typeEffect, delay);
     };
     
-    // Start the animation
+    // Start the animation and set up window resize handler
+    const handleResize = () => {
+      // If window is resized, restart typing effect to get appropriate length placeholders
+      if (searchPlaceholderTimeoutRef.current) {
+        clearTimeout(searchPlaceholderTimeoutRef.current);
+      }
+      
+      // Reset and restart
+      currentIndex = 0;
+      textPosition = 0;
+      phase = "typing";
+      searchPlaceholderTimeoutRef.current = setTimeout(typeEffect, 500);
+    };
+    
+    // Set up initial timeout
     searchPlaceholderTimeoutRef.current = setTimeout(typeEffect, 500);
+    
+    // Add resize listener
+    window.addEventListener('resize', handleResize);
     
     // Cleanup
     return () => {
       if (searchPlaceholderTimeoutRef.current) {
         clearTimeout(searchPlaceholderTimeoutRef.current);
       }
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
-  const tags: string[] = ["AI/ML", "Web3", "AR/VR", "Healthcare", "Climate Tech", "Full Stack", "Mobile"];
-
-  const handleTagClick = (tag: string) => {
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
+  // Function to focus the search input
+  const focusSearch = () => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
     }
   };
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
     setIsSearching(true);
     setShowResults(true);
     setSearchError(null);
@@ -151,7 +167,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           searchQuery,
-          selectedTags,
+          selectedTags: [], // Keep this empty array for API compatibility
         }),
       });
 
@@ -161,20 +177,16 @@ export default function Home() {
         throw new Error(data.error || `Error ${response.status}: Failed to perform search`);
       }
 
-      console.log('Search results:', data);
       setSearchResults(data.results || []);
       
-      // If we got a successful response but no results, check the debug endpoint
-      if (data.results && data.results.length === 0) {
-        console.log('No results found, checking debug endpoint...');
-        try {
-          const debugResponse = await fetch('/api/debug');
-          const debugData = await debugResponse.json();
-          console.log('Debug data:', debugData);
-        } catch (debugError) {
-          console.error('Debug endpoint error:', debugError);
-        }
-      }
+      // Scroll to results with a slight delay for a smooth transition
+      setTimeout(() => {
+        document.getElementById('results-section')?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+      
     } catch (error) {
       console.error('Search error:', error);
       setSearchError((error as Error).message || 'An error occurred during search');
@@ -185,187 +197,237 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen text-[var(--text-primary)] font-sans antialiased relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute inset-0 bg-[var(--bg-primary)] z-0"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-[var(--bg-secondary)]/50 to-[var(--bg-primary)] z-0"></div>
-      
-      {/* Grid background */}
-      <div className="absolute inset-0 grid-background z-0 opacity-20"></div>
-      
+    <div className="min-h-screen bg-[var(--apple-bg)]">
       {/* Navbar */}
       <Navbar resetState={resetState} />
       
-      {/* Main content container */}
-      <div className="relative z-10 pt-24 pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-6 floating">
-            <h1 className="terminal-text text-4xl font-bold tracking-tight sm:text-5xl mb-2">
-              <span className="text-[var(--accent)]">&gt;</span> 
-              Ship Your Next Hack
-              <span className="text-[var(--accent)]"> /&gt;</span>
+      {/* Hero Section */}
+      <section className="pt-32 pb-16 md:pt-40 md:pb-20 relative overflow-hidden">
+        {/* Background gradient elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[500px] bg-gradient-to-b from-[var(--apple-accent-light)] via-[var(--apple-accent-light)] to-transparent opacity-20 blur-3xl rounded-full -z-10"></div>
+        
+        <div className="apple-container relative z-10">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="apple-heading mb-6 reveal-animation">
+              Discover award-winning <br className="hidden sm:inline" />
+              hackathon projects
             </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-base tracking-wide text-[var(--text-secondary)] font-light terminal-text">
-              <span className="text-[var(--accent)]">$</span> Find winning project ideas. Build something awesome.
+            
+            <p className="apple-caption text-[var(--apple-text-secondary)] mb-12 reveal-animation stagger-1">
+              Explore innovative solutions from the world's top hackathons
             </p>
+            
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto reveal-animation stagger-2">
+              <form onSubmit={handleSearch} className="relative">
+                <div className={`relative transition-all duration-300 ${isSearchFocused ? 'transform scale-[1.02]' : ''}`}>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsSearchFocused(true)}
+                    onBlur={() => setIsSearchFocused(false)}
+                    className="apple-input py-5 px-6 pr-16 shadow-lg sm:text-base text-sm" 
+                    placeholder={searchPlaceholder || "Search hackathon projects..."}
+                  />
+                  <button
+                    type="submit"
+                    className={`absolute inset-y-0 right-2 my-2 flex items-center justify-center w-10 h-10 rounded-full bg-[var(--apple-accent)] text-white transition-all duration-300 z-20 ${!searchQuery.trim() ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105'}`}
+                    disabled={!searchQuery.trim()}
+                  >
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                </div>
+                
+                <div className="absolute bottom-[-28px] w-full text-center">
+                  <p className="text-xs md:text-sm text-[var(--apple-text-secondary)]/80 italic font-light">
+                    {isSearchFocused ? 'Press Enter to search' : 'Try searching for technologies or hackathons'}
+                  </p>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Search Section - Centered focus */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 -mt-4">
-        {/* Dynamic Changing Title */}
-        
-        <div 
-          className={`backdrop-blur-sm bg-[var(--bg-secondary)]/90 border transition-all duration-500 rounded-xl p-6 sm:p-8 ${
-            isSearchFocused 
-              ? 'border-[var(--accent)] shadow-[var(--accent)]/5' 
-              : 'border-[var(--border-primary)] hover:border-[var(--border-hover)]'
-          }`}
-        >
-          <form onSubmit={handleSearch}>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className={`transition-colors duration-200 ${
-                  isSearchFocused ? 'text-[var(--accent)]' : 'text-[var(--text-secondary)]'
-                }`}>
-                  <span className="text-[var(--accent)]">$</span>&gt;
-                </span>
-              </div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-                className="block w-full pl-12 pr-4 py-5 border-b border-[var(--border-primary)] rounded-lg leading-5 bg-transparent terminal-text placeholder-[var(--text-secondary)]/50 focus:outline-none focus:border-[var(--accent)] text-lg transition-all duration-300"
-                placeholder={searchPlaceholder}
-              />
-            </div>
-            
-            <div className="mt-6 flex flex-wrap gap-3 justify-center">
-              <p className="w-full text-center text-[var(--text-secondary)]/60 text-sm mb-2 terminal-text">
-                <span className="text-[var(--accent)]">&gt;</span> Filter by tech stack
-              </p>
-              {tags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleTagClick(tag)}
-                  onMouseEnter={() => setHoveredTag(tag)}
-                  onMouseLeave={() => setHoveredTag(null)}
-                  className={`rounded-full px-5 py-2 border terminal-text transition-all duration-300 ${
-                    selectedTags.includes(tag) 
-                      ? 'border-[var(--accent)] bg-[var(--accent)]/5 text-[var(--accent)]' 
-                      : hoveredTag === tag 
-                        ? 'border-[var(--border-hover)] text-[var(--text-primary)] bg-[var(--bg-secondary)]' 
-                        : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--border-hover)]'
-                  } text-sm font-medium cursor-pointer flex items-center gap-1`}
-                >
-                  {tag === "AI/ML" && <Code2Icon className="inline h-3 w-3" />}
-                  {tag === "Web3" && <ZapIcon className="inline h-3 w-3" />}
-                  {tag === "AR/VR" && <LightbulbIcon className="inline h-3 w-3" />}
-                  {tag === "Healthcare" && <ServerIcon className="inline h-3 w-3" />}
-                  {tag === "Full Stack" && <LayersIcon className="inline h-3 w-3" />}
-                  {tag === "Mobile" && <SmartphoneIcon className="inline h-3 w-3" />}
-                  {tag === "Climate Tech" && <LeafIcon className="inline h-3 w-3" />}
-                  <span className="text-[var(--accent)]">[</span>
-                  {tag}
-                  <span className="text-[var(--accent)]">]</span>
-                </button>
-              ))}
-            </div>
-            
-            <div className="mt-6 flex justify-center">
-              <button 
-                type="submit"
-                className="px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-dark)] text-white font-medium terminal-text rounded-lg transition-all duration-300 transform hover:translate-y-[-2px] flex items-center gap-2"
-              >
-                <span className="text-white/90">$</span> ./find_projects
-              </button>
-            </div>
-          </form>
-        </div>
-        
-        {/* Search Results */}
-        {showResults && (
-          <div className="mt-12 space-y-6">
-            <div className="text-left mb-4">
-              <h2 className="terminal-text text-xl text-[var(--text-secondary)] flex items-center gap-3">
-                <span className="text-[var(--accent)]">$</span> ls ./matching_projects
-                {isSearching && (
-                  <LoaderIcon className="h-5 w-5 text-[var(--accent)] animate-spin" />
-                )}
-              </h2>
-              {isSearching ? (
-                <div className="mt-2 space-y-1">
-                  <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
-                    <span className="text-[var(--accent)]">$</span> semantic-search --query=&quot;{searchQuery}&quot; {selectedTags.length > 0 && `--tags=[${selectedTags.join(', ')}]`}
-                  </p>
-                  <p className="text-sm text-[var(--text-secondary)]/60 terminal-text animate-pulse">
-                    <span className="text-[var(--accent)]">&gt;</span> Searching through hackathon database...
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-2 space-y-1">
-                  {searchError ? (
-                    <p className="text-sm text-[var(--accent)] terminal-text">
-                      <span className="text-[var(--accent)]">&gt;</span> Error: {searchError}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
-                        <span className="text-[var(--accent)]">&gt;</span> Found {searchResults.length} matching project{searchResults.length !== 1 ? 's' : ''}
-                      </p>
-                      <p className="text-sm text-[var(--text-secondary)]/60 terminal-text">
-                        <span className="text-[var(--accent)]">&gt;</span> Displaying results by relevance
-                      </p>
-                    </>
+      </section>
+      
+      {/* Results Section */}
+      {showResults && (
+        <section id="results-section" className="py-16 relative fade-in">
+          <div className="apple-container">
+            <div className="border-b border-[var(--apple-border)] pb-4 mb-10">
+              <div className="flex items-center justify-between">
+                <h2 className="apple-subheading font-semibold flex items-center gap-2">
+                  Results
+                  {!isSearching && searchResults.length > 0 && (
+                    <Sparkles className="w-5 h-5 text-[var(--apple-accent)]" />
                   )}
-                </div>
-              )}
+                </h2>
+                {isSearching ? (
+                  <div className="flex items-center text-[var(--apple-text-secondary)]">
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <span className="text-sm">Searching...</span>
+                  </div>
+                ) : (
+                  <p className="text-sm text-[var(--apple-text-secondary)]">
+                    {searchQuery && <span className="font-medium">"{searchQuery}"</span>} • {searchResults.length} results
+                  </p>
+                )}
+              </div>
             </div>
-            {!isSearching && !searchError && (
-              <div className="space-y-6">
-                {searchResults.length > 0 ? (
-                  searchResults.map((project, index) => (
+            
+            {searchError ? (
+              <div className="max-w-md mx-auto text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-red-50 text-[var(--apple-error)]">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium mb-2">Search Error</h3>
+                <p className="text-[var(--apple-text-secondary)] mb-6">{searchError}</p>
+                <button 
+                  className="apple-button"
+                  onClick={focusSearch}
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : isSearching ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="apple-card">
+                    <div className="p-6">
+                      <div className="h-3 bg-[var(--apple-bg-secondary)] rounded mb-2 w-1/3"></div>
+                      <div className="h-5 bg-[var(--apple-bg-secondary)] rounded mb-3 w-3/4"></div>
+                      <div className="h-16 bg-[var(--apple-bg-secondary)] rounded mb-4"></div>
+                      <div className="h-4 bg-[var(--apple-bg-secondary)] rounded w-1/4"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="max-w-md mx-auto text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-[var(--apple-bg-secondary)] text-[var(--apple-text-secondary)]">
+                  <Search className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-medium mb-2">No projects found</h3>
+                <p className="text-[var(--apple-text-secondary)] mb-6">
+                  We couldn't find any projects matching "{searchQuery}". Try a different search term or browse our categories.
+                </p>
+                <button 
+                  className="apple-button"
+                  onClick={focusSearch}
+                >
+                  Try Another Search
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchResults.map((project, index) => (
+                  <div key={index} className={`reveal-animation stagger-${(index % 5) + 1}`}>
                     <ProjectCard 
-                      key={index}
                       projectName={project.projectName}
-                      date={project.date}
                       hackathon={project.hackathon}
                       tagline={project.tagline}
                       projectUrl={project.projectUrl}
-                      tags={project.tags}
                     />
-                  ))
-                ) : (
-                  <div className="backdrop-blur-sm bg-[var(--bg-secondary)]/90 border border-[var(--border-primary)] rounded-lg p-6 text-center">
-                    <p className="text-[var(--text-secondary)] terminal-text">No projects found matching your criteria.</p>
-                    <p className="text-[var(--text-secondary)]/60 text-sm mt-2 terminal-text">Try a different search term or remove some filters.</p>
                   </div>
-                )}
+                ))}
               </div>
             )}
           </div>
-        )}
-        
-        {/* Tech decoration at bottom */}
-        <div className="flex flex-col items-center gap-2 mt-8">
-          <div className="text-[var(--text-secondary)]/50 text-xs terminal-text">
-            <code>$ find . -name &quot;awesome_ideas&quot; | sort -r | head -n 1</code>
-          </div>
-          <p className="text-[var(--text-secondary)]/60 text-xs terminal-text">
-            <span className="text-[var(--accent)]">$</span> semantic-search --mode=blazing-fast ⚡
-          </p>
-        </div>
-        
-        {/* Footer */}
-        <div className="mt-20">
-          <Footer />
-        </div>
-      </div>
+        </section>
+      )}
       
+      {/* Recent Highlights (only shown when not showing search results) */}
+      {!showResults && (
+        <section className="py-20 relative">
+          <div className="apple-container">
+            <h2 className="apple-subheading font-semibold mb-8 reveal-animation">
+              Discover by category
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <div className="showcase-card reveal-animation stagger-1" onClick={() => {
+                setSearchQuery("AI and machine learning projects");
+                document.querySelector<HTMLFormElement>("form")?.requestSubmit();
+              }}>
+                <div className="flex items-center justify-between mb-3">
+                  <Brain className="w-8 h-8 text-[var(--apple-accent)]" />
+                  <ArrowRight className="w-5 h-5 text-[var(--apple-text-secondary)] opacity-60 group-hover:opacity-100" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-2">AI & Machine Learning</h3>
+                <p className="text-[var(--apple-text-secondary)]">
+                  Explore cutting-edge projects using artificial intelligence, machine learning models, and natural language processing
+                </p>
+              </div>
+              
+              <div className="showcase-card reveal-animation stagger-2" onClick={() => {
+                setSearchQuery("Web3 and blockchain projects");
+                document.querySelector<HTMLFormElement>("form")?.requestSubmit();
+              }}>
+                <div className="flex items-center justify-between mb-3">
+                  <Globe className="w-8 h-8 text-[var(--apple-accent)]" />
+                  <ArrowRight className="w-5 h-5 text-[var(--apple-text-secondary)] opacity-60 group-hover:opacity-100" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-2">Web3 & Blockchain</h3>
+                <p className="text-[var(--apple-text-secondary)]">
+                  Discover decentralized applications, blockchain innovations, and cryptocurrency solutions
+                </p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="apple-card p-6 flex flex-col reveal-animation stagger-3 hover:cursor-pointer" onClick={() => {
+                setSearchQuery("mobile app development");
+                document.querySelector<HTMLFormElement>("form")?.requestSubmit();
+              }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Laptop className="w-5 h-5 text-[var(--apple-accent)]" />
+                  <h3 className="font-medium">Mobile Apps</h3>
+                </div>
+                <p className="text-sm text-[var(--apple-text-secondary)] mb-4">
+                  iOS, Android, and cross-platform mobile applications
+                </p>
+                <ArrowRight className="w-4 h-4 text-[var(--apple-accent)] mt-auto self-end" />
+              </div>
+              
+              <div className="apple-card p-6 flex flex-col reveal-animation stagger-4 hover:cursor-pointer" onClick={() => {
+                setSearchQuery("climate change technology");
+                document.querySelector<HTMLFormElement>("form")?.requestSubmit();
+              }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <svg className="w-5 h-5 text-[var(--apple-accent)]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.75 11.25a.75.75 0 0 0-1.5 0v2.5a.75.75 0 0 0 1.5 0v-2.5ZM7.24 14.79a.75.75 0 0 0 1.06-1.06 3.989 3.989 0 0 1-1.18-2.85c0-2.21 1.79-4 4-4s4 1.79 4 4a3.989 3.989 0 0 1-1.18 2.85.75.75 0 1 0 1.06 1.06A5.489 5.489 0 0 0 16.5 10.88c0-3.03-2.47-5.5-5.5-5.5s-5.5 2.47-5.5 5.5c0 1.52.62 2.89 1.62 3.89ZM12 17a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+                  </svg>
+                  <h3 className="font-medium">Climate Tech</h3>
+                </div>
+                <p className="text-sm text-[var(--apple-text-secondary)] mb-4">
+                  Projects addressing environmental challenges and sustainability
+                </p>
+                <ArrowRight className="w-4 h-4 text-[var(--apple-accent)] mt-auto self-end" />
+              </div>
+              
+              <div className="apple-card p-6 flex flex-col reveal-animation stagger-5 hover:cursor-pointer" onClick={() => {
+                setSearchQuery("next.js react applications");
+                document.querySelector<HTMLFormElement>("form")?.requestSubmit();
+              }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Code2 className="w-5 h-5 text-[var(--apple-accent)]" />
+                  <h3 className="font-medium">Frontend & UI</h3>
+                </div>
+                <p className="text-sm text-[var(--apple-text-secondary)] mb-4">
+                  Beautiful web interfaces built with modern frameworks
+                </p>
+                <ArrowRight className="w-4 h-4 text-[var(--apple-accent)] mt-auto self-end" />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
