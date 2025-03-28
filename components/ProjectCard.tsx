@@ -1,5 +1,5 @@
 import React from 'react';
-import { ExternalLinkIcon, TrophyIcon, Code2Icon, ZapIcon, LightbulbIcon, ServerIcon, LayersIcon, SmartphoneIcon, LeafIcon } from 'lucide-react';
+import { ExternalLink, Award } from 'lucide-react';
 
 interface ProjectCardProps {
     projectName: string;
@@ -16,66 +16,42 @@ export default function ProjectCard({
     hackathon, 
     tagline, 
     projectUrl,
-    tags = [],
 }: ProjectCardProps) {
     // Truncate long taglines
-    const truncatedTagline = tagline.length > 120 
-        ? tagline.substring(0, 120) + '...'
+    const truncatedTagline = tagline.length > 100 
+        ? tagline.substring(0, 100) + '...'
         : tagline;
 
     return (
-        <div className="backdrop-blur-sm bg-[var(--bg-secondary)]/90 border border-[var(--border-primary)] rounded-lg transition-all duration-300 hover:border-[var(--accent)] hover:shadow-[var(--accent)]/5 overflow-hidden group">
-            <div className="p-6">
-                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2 terminal-text group-hover:text-[var(--accent)] transition-colors duration-300">
-                    <span className="text-[var(--accent)]">&gt;</span> {projectName}
-                </h3>
-                <div className="flex items-center text-[var(--text-secondary)] text-sm mb-3">
-                    <span className="flex items-center">
-                        <TrophyIcon className="w-4 h-4 mr-1 text-[var(--accent)]" />
-                        <span className="bg-[var(--accent)]/5 text-[var(--accent)] px-2 py-1 rounded-md terminal-text">
-                            {hackathon}
-                        </span>
-                    </span>
-                </div>
-                <p className="text-[var(--text-secondary)] mb-4 terminal-text">{truncatedTagline}</p>
-                
-                {tags && tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {tags.slice(0, 5).map((tag, index) => {
-                            // Normalize tag for display
-                            const displayTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
-                            
-                            return (
-                                <span 
-                                    key={index}
-                                    className="text-xs px-2 py-1 rounded-full border border-[var(--border-primary)] text-[var(--text-secondary)] terminal-text flex items-center gap-1"
-                                >
-                                    {tag.toLowerCase().includes('ai') && <Code2Icon className="inline h-3 w-3" />}
-                                    {tag.toLowerCase().includes('web3') && <ZapIcon className="inline h-3 w-3" />}
-                                    {tag.toLowerCase().includes('vr') && <LightbulbIcon className="inline h-3 w-3" />}
-                                    {tag.toLowerCase().includes('health') && <ServerIcon className="inline h-3 w-3" />}
-                                    {tag.toLowerCase().includes('stack') && <LayersIcon className="inline h-3 w-3" />}
-                                    {tag.toLowerCase().includes('mobile') && <SmartphoneIcon className="inline h-3 w-3" />}
-                                    {tag.toLowerCase().includes('climate') && <LeafIcon className="inline h-3 w-3" />}
-                                    {displayTag}
-                                </span>
-                            );
-                        })}
+        <div className="apple-card group relative hover:border-[var(--apple-accent-light)] transition-all">
+            <a 
+                href={projectUrl || '#'} 
+                target={projectUrl ? "_blank" : undefined}
+                rel={projectUrl ? "noopener noreferrer" : undefined}
+                className="block p-5 h-full"
+            >
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-[var(--apple-text-secondary)]">
+                        <Award className="w-3 h-3 text-[var(--apple-accent)]" />
+                        <span>{hackathon}</span>
                     </div>
-                )}
+                    {projectUrl && (
+                        <ExternalLink className="w-3 h-3 text-[var(--apple-text-secondary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                </div>
                 
-                {projectUrl && (
-                    <a
-                        href={projectUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-[var(--accent)] hover:bg-[var(--accent-dark)] terminal-text transition-all duration-300 transform hover:translate-y-[-2px]"
-                    >
-                        View Project
-                        <ExternalLinkIcon className="ml-2 h-4 w-4" />
-                    </a>
-                )}
-            </div>
+                <h3 className="text-base font-medium text-[var(--apple-text)] mb-2 group-hover:text-[var(--apple-accent)] transition-colors">
+                    {projectName}
+                </h3>
+                
+                <p className="text-[var(--apple-text-secondary)] text-sm leading-relaxed">
+                    {truncatedTagline}
+                </p>
+                
+                <div 
+                    className="absolute inset-0 border-[1.5px] border-[var(--apple-accent)] rounded-[0.24rem] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                />
+            </a>
         </div>
     );
 }

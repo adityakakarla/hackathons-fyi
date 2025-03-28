@@ -12,18 +12,6 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY ?? '',
 });
 
-// Define the project type to match the ProjectCard component
-interface Project {
-  id: string;
-  projectName: string;
-  date: string;
-  hackathon: string;
-  tagline: string;
-  projectUrl?: string;
-  tags: string[];
-  // Add any other fields that might be in your database
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { searchQuery, selectedTags = [] } = await req.json();
@@ -59,17 +47,9 @@ export async function POST(req: NextRequest) {
     const namespacedIndex = index.namespace('ns1');
 
     // Prepare filter based on tags if any are selected
-    let filter;
-    if (selectedTags.length > 0) {
-      // Since the example doesn't have tags field, we'll use a text search in the description
-      // This is a basic approach - in a real-world scenario, you might want to extract
-      // and index tags separately
-      filter = {
-        $or: selectedTags.map((tag: string) => ({ 
-          description: { $text: { $contains: tag } } 
-        }))
-      };
-    }
+    // We're keeping the code structure but effectively disabling tag filtering
+    // since the feature has been removed from the UI
+    const filter = undefined;
     
     console.log('Using filter:', filter);
 
@@ -77,7 +57,7 @@ export async function POST(req: NextRequest) {
     console.log('Querying Pinecone namespace ns1...');
     const queryResponse = await namespacedIndex.query({
       vector: queryEmbedding,
-      topK: 10, // Get top 10 results
+      topK:30, // Get top 10 results
       includeMetadata: true,
       filter,
     });

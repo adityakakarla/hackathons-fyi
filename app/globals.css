@@ -1,17 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* Root variables */
+/* Root variables with refined color palette - Notion-inspired */
 :root {
-  --accent: #4F46E5;
-  --accent-dark: #4338CA;
-  --bg-primary: #0A0A14;
-  --bg-secondary: #13131F;
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --border-primary: #1E293B;
-  --border-hover: #334155;
+  /* Light mode - Notion inspired */
+  --notion-bg: #ffffff;
+  --notion-bg-secondary: #f7f7f7;
+  --notion-bg-tertiary: #efefef;
+  --notion-text: #37352f;
+  --notion-text-secondary: #6b6b6b;
+  --notion-accent: #2383e2;
+  --notion-accent-hover: #1b64da;
+  --notion-accent-light: rgba(35, 131, 226, 0.08);
+  --notion-border: #ebebeb;
+  --notion-shadow: rgba(15, 15, 15, 0.05);
+  --notion-shadow-hover: rgba(15, 15, 15, 0.1);
+  --notion-gradient-start: #ffffff;
+  --notion-gradient-end: #f7f7f7;
+  --notion-error: #eb5757;
+  --notion-success: #0ca678;
+  --notion-warning: #f7a501;
+  
+  /* Update Apple variables to match Notion style */
+  --apple-bg: var(--notion-bg);
+  --apple-bg-secondary: var(--notion-bg-secondary);
+  --apple-text: var(--notion-text);
+  --apple-text-secondary: var(--notion-text-secondary);
+  --apple-accent: var(--notion-accent);
+  --apple-accent-hover: var(--notion-accent-hover);
+  --apple-accent-light: var(--notion-accent-light);
+  --apple-border: var(--notion-border);
+  --apple-shadow: var(--notion-shadow);
+  --apple-shadow-hover: var(--notion-shadow-hover);
+  --apple-gradient-start: var(--notion-gradient-start);
+  --apple-gradient-end: var(--notion-gradient-end);
+  --apple-error: var(--notion-error);
+  --apple-success: var(--notion-success);
+}
+
+/* Dark mode overrides with Notion-inspired dark theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --notion-bg: #191919;
+    --notion-bg-secondary: #1f1f1f;
+    --notion-bg-tertiary: #2a2a2a;
+    --notion-text: #f1f1f1;
+    --notion-text-secondary: #a5a5a5;
+    --notion-accent: #2995ff;
+    --notion-accent-hover: #1a85ff;
+    --notion-accent-light: rgba(41, 149, 255, 0.08);
+    --notion-border: #2c2c2c;
+    --notion-shadow: rgba(0, 0, 0, 0.2);
+    --notion-shadow-hover: rgba(0, 0, 0, 0.3);
+    --notion-gradient-start: #1e1e1e;
+    --notion-gradient-end: #191919;
+    --notion-error: #ff6369;
+    --notion-success: #21c897;
+    --notion-warning: #ffbe45;
+    
+    /* Update Apple variables to match Notion style */
+    --apple-bg: var(--notion-bg);
+    --apple-bg-secondary: var(--notion-bg-secondary);
+    --apple-text: var(--notion-text);
+    --apple-text-secondary: var(--notion-text-secondary);
+    --apple-accent: var(--notion-accent);
+    --apple-accent-hover: var(--notion-accent-hover);
+    --apple-accent-light: var(--notion-accent-light);
+    --apple-border: var(--notion-border);
+    --apple-shadow: var(--notion-shadow);
+    --apple-shadow-hover: var(--notion-shadow-hover);
+    --apple-gradient-start: var(--notion-gradient-start);
+    --apple-gradient-end: var(--notion-gradient-end);
+    --apple-error: var(--notion-error);
+    --apple-success: var(--notion-success);
+  }
 }
 
 /* Animations */
@@ -28,7 +91,7 @@
 
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-6px); }
   100% { transform: translateY(0px); }
 }
 
@@ -44,6 +107,22 @@
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
+}
+
+@keyframes reveal {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes subtle-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
 }
 
 /* Terminal text style */
@@ -96,11 +175,17 @@
 
 /* Base styles */
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--apple-bg);
+  color: var(--apple-text);
   overflow-x: hidden;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-feature-settings: "ss01", "ss02", "ss03", "cv01", "cv02";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  letter-spacing: -0.011em;
 }
 
 /* Grid background */
@@ -133,7 +218,206 @@ body {
 
 /* Selection styling */
 ::selection {
-  background: var(--accent);
-  color: #000;
+  background: var(--notion-accent-light);
+  color: var(--apple-text);
   text-shadow: none;
 }
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  border: 2px solid var(--apple-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.14);
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+}
+
+/* Container styling */
+.apple-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* UI Components - Notion-inspired */
+.apple-section {
+  margin-bottom: 2.5rem;
+}
+
+.apple-heading {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  color: var(--apple-text);
+}
+
+.apple-subheading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--apple-text);
+}
+
+.apple-caption {
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--apple-text-secondary);
+}
+
+.apple-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
+  background-color: var(--apple-accent);
+  color: white;
+  border: none;
+  transition: background-color 0.2s ease;
+  letter-spacing: -0.01em;
+}
+
+.apple-button:hover {
+  background-color: var(--apple-accent-hover);
+  text-decoration: none;
+}
+
+.apple-button:active {
+  transform: translateY(1px);
+}
+
+.apple-input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--apple-border);
+  border-radius: 0.25rem;
+  background-color: var(--apple-bg);
+  color: var(--apple-text);
+  transition: all 0.2s ease;
+  letter-spacing: -0.01em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.apple-input::placeholder {
+  color: var(--apple-text-secondary);
+  opacity: 0.7;
+}
+
+.apple-input:focus {
+  outline: none;
+  border-color: var(--apple-accent);
+  box-shadow: 0 0 0 2px var(--apple-accent-light);
+}
+
+@media (max-width: 640px) {
+  .apple-input {
+    font-size: 0.875rem;
+  }
+  
+  .apple-input::placeholder {
+    font-size: 0.875rem;
+  }
+}
+
+.apple-card {
+  position: relative;
+  background-color: var(--apple-bg);
+  border: 1px solid var(--apple-border);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  height: 100%;
+}
+
+.apple-card:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  .apple-card:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Showcase card styling - more elegant and premium */
+.showcase-card {
+  position: relative;
+  background-color: var(--apple-bg);
+  padding: 1.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--apple-border);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  height: 100%;
+}
+
+.showcase-card:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .showcase-card:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Animations refined for subtlety */
+.reveal-animation {
+  animation: reveal 0.7s ease forwards;
+  opacity: 0;
+}
+
+.fade-in {
+  animation: fade-in 0.7s ease forwards;
+}
+
+.float-animation {
+  animation: float 8s ease-in-out infinite;
+}
+
+.subtle-pulse {
+  animation: subtle-pulse 7s ease-in-out infinite;
+}
+
+/* Staggered animation classes */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
