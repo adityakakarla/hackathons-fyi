@@ -12,18 +12,6 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY ?? '',
 });
 
-// Define the project type to match the ProjectCard component
-interface Project {
-  id: string;
-  projectName: string;
-  date: string;
-  hackathon: string;
-  tagline: string;
-  projectUrl?: string;
-  tags: string[];
-  // Add any other fields that might be in your database
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { searchQuery, selectedTags = [] } = await req.json();
@@ -61,7 +49,7 @@ export async function POST(req: NextRequest) {
     // Prepare filter based on tags if any are selected
     // We're keeping the code structure but effectively disabling tag filtering
     // since the feature has been removed from the UI
-    let filter = undefined;
+    const filter = undefined;
     
     console.log('Using filter:', filter);
 
